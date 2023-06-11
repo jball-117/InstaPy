@@ -581,7 +581,7 @@ class InstaPy:
         enabled: to add story to interact
         percentage: how much to watch
         simulate: if True, we will simulate watching (faster),
-                  but nothing will be seen on the browser window
+        but nothing will be seen on the browser window
         """
         if self.aborting:
             return self
@@ -1927,6 +1927,7 @@ class InstaPy:
         else:
             # deletes white spaces in tags
             tags = [tag.strip() for tag in tags]
+            tags = [tag.replace(" ", "") for tag in tags]
             tags = tags or []
             self.quotient_breach = False
 

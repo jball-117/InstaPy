@@ -1047,11 +1047,11 @@ def click_element(browser, element, tryNum=0):
     https://github.com/timgrossmann/InstaPy/issues/1232
 
     explanation of the following recursive function:
-      we will attempt to click the element given, if an error is thrown
-      we know something is wrong (element not in view, element doesn't
-      exist, ...). on each attempt try and move the screen around in
-      various ways. if all else fails, programmically click the button
-      using `execute_script` in the browser.
+    we will attempt to click the element given, if an error is thrown
+    we know something is wrong (element not in view, element doesn't
+    exist, ...). on each attempt try and move the screen around in
+    various ways. if all else fails, programmically click the button
+    using `execute_script` in the browser.
     """
 
     try:
@@ -1136,6 +1136,8 @@ def format_number(number):
         r"(m)$", "00000" if "." in formatted_num else "000000", formatted_num
     )
     formatted_num = formatted_num.replace(".", "")
+    formatted_num = formatted_num.replace("\nfollowers", "")
+    formatted_num = formatted_num.replace("\nfollowing", "")
     return int(formatted_num)
 
 
@@ -1232,6 +1234,7 @@ def get_relationship_counts(browser, username, logger):
                     )
                     followers_count = None
 
+    logger.info("before following count.")
     try:
         following_count = browser.execute_script(
             "return window._sharedData.entry_data."
