@@ -253,7 +253,7 @@ def get_links_for_location(
     return links[:amount]
 
 
-def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, logger):
+def get_links_for_tag(browser, tag, amount, skip_top_posts, top_posts_only, randomize, media, logger):
     """
     Fetches the number of links specified by amount and returns a list of links
     """
@@ -345,81 +345,82 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
     # Get links
     links = get_links(browser, tag, logger, media, main_elem)
     # Disabling this are there are only 9 "Top Posts" now
-    filtered_links = 1
-    try_again = 0
-    sc_rolled = 0
-    nap = 1.5
-    put_sleep = 0
-    try:
-        while filtered_links in range(1, amount):
-            if sc_rolled > 100:
-                logger.info("Scrolled too much! ~ sleeping a bit :>")
-                sleep(600)
-                sc_rolled = 0
+    if not top_posts_only:
+        filtered_links = 1
+        try_again = 0
+        sc_rolled = 0
+        nap = 1.5
+        put_sleep = 0
+        try:
+            while filtered_links in range(1, amount):
+                if sc_rolled > 100:
+                    logger.info("Scrolled too much! ~ sleeping a bit :>")
+                    sleep(600)
+                    sc_rolled = 0
 
-            for i in range(3):
-                browser.execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);"
-                )
-                update_activity(browser, state=None)
-                sc_rolled += 1
-                sleep(nap)  # if not slept, and internet speed is low,
-                # instagram will only scroll one time, instead of many times
-                # you sent scroll command...
+                for i in range(3):
+                    browser.execute_script(
+                        "window.scrollTo(0, document.body.scrollHeight);"
+                    )
+                    update_activity(browser, state=None)
+                    sc_rolled += 1
+                    sleep(nap)  # if not slept, and internet speed is low,
+                    # instagram will only scroll one time, instead of many times
+                    # you sent scroll command...
 
-            sleep(3)
-            links.extend(get_links(browser, tag, logger, media, main_elem))
-
-            links_all = links  # uniqify links while preserving order
-            s = set()
-            links = []
-            for i in links_all:
-                if i not in s:
-                    s.add(i)
-                    links.append(i)
-
-            if len(links) == filtered_links:
-                try_again += 1
-                nap = 3 if try_again == 1 else 5
-                logger.info(
-                    "Insufficient amount of links ~ trying again: {}".format(try_again)
-                )
                 sleep(3)
+                links.extend(get_links(browser, tag, logger, media, main_elem))
 
-                if try_again > 2:  # you can try again as much as you want
-                    # by changing this number
-                    if put_sleep < 1 and filtered_links <= 21:
-                        logger.info(
-                            "Cor! Did you send too many requests?  ~let's rest some"
-                        )
-                        sleep(600)
-                        put_sleep += 1
+                links_all = links  # uniqify links while preserving order
+                s = set()
+                links = []
+                for i in links_all:
+                    if i not in s:
+                        s.add(i)
+                        links.append(i)
 
-                        browser.execute_script("location.reload()")
-                        update_activity(browser, state=None)
-                        try_again = 0
-                        sleep(10)
+                if len(links) == filtered_links:
+                    try_again += 1
+                    nap = 3 if try_again == 1 else 5
+                    logger.info(
+                        "Insufficient amount of links ~ trying again: {}".format(try_again)
+                    )
+                    sleep(3)
 
-                        main_elem = get_main_element(
-                            browser, link_elems, skip_top_posts
-                        )
-                    else:
-                        logger.info(
-                            "'{}' tag POSSIBLY has less images than "
-                            "desired:{} found:{}...".format(tag, amount, len(links))
-                        )
-                        break
-            else:
-                filtered_links = len(links)
-                try_again = 0
-                nap = 1.5
-    except Exception:
-        raise
+                    if try_again > 2:  # you can try again as much as you want
+                        # by changing this number
+                        if put_sleep < 1 and filtered_links <= 21:
+                            logger.info(
+                                "Cor! Did you send too many requests?  ~let's rest some"
+                            )
+                            sleep(600)
+                            put_sleep += 1
 
-    sleep(4)
+                            browser.execute_script("location.reload()")
+                            update_activity(browser, state=None)
+                            try_again = 0
+                            sleep(10)
 
-    if skip_top_posts:
-        del links[0:9]
+                            main_elem = get_main_element(
+                                browser, link_elems, skip_top_posts
+                            )
+                        else:
+                            logger.info(
+                                "'{}' tag POSSIBLY has less images than "
+                                "desired:{} found:{}...".format(tag, amount, len(links))
+                            )
+                            break
+                else:
+                    filtered_links = len(links)
+                    try_again = 0
+                    nap = 1.5
+        except Exception:
+            raise
+
+        sleep(4)
+
+        if skip_top_posts:
+            del links[0:9]
 
     if randomize is True:
         random.shuffle(links)

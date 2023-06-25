@@ -1,10 +1,6 @@
-""" Quickstart script for InstaPy usage """
-
-# imports
 from instapy import InstaPy
 from instapy import smart_run
-from instapy import set_workspace
-
+# from instapy import set_workspace
 
 # set workspace folder at desired location (default is at your home folder)
 # set_workspace(path=None)
@@ -16,4 +12,4 @@ with smart_run(session):
     # general settings
 
     # activity
-    session.like_by_tags(["computer science"], amount=1)
+    session.like_by_tags(["computer science"], amount=9, top_posts_only=True)

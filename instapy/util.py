@@ -1234,7 +1234,6 @@ def get_relationship_counts(browser, username, logger):
                     )
                     followers_count = None
 
-    logger.info("before following count.")
     try:
         following_count = browser.execute_script(
             "return window._sharedData.entry_data."
@@ -2599,7 +2598,7 @@ def file_handling(file):
 
 class CustomizedArgumentParser(ArgumentParser):
     """
-     Subclass ArgumentParser in order to turn off
+    Subclass ArgumentParser in order to turn off
     the abbreviation matching on older pythons.
 
     `allow_abbrev` parameter was added by Python 3.5 to do it.
@@ -2608,7 +2607,7 @@ class CustomizedArgumentParser(ArgumentParser):
 
     def _get_option_tuples(self, option_string):
         """
-         Default of this method searches through all possible prefixes
+        Default of this method searches through all possible prefixes
         of the option string and all actions in the parser for possible
         interpretations.
 
@@ -2630,16 +2629,18 @@ def get_additional_data(browser):
     :return additional_data: Json data from window.__additionalData extracted from page source
     """
     additional_data = None
-    # soup = BeautifulSoup(browser.page_source, "html.parser")
-    # for text in soup(text=re.compile(r"window.__additionalDataLoaded")):
-    #     if re.search("^window.__additionalDataLoaded", text):
-    #         additional_data = json.loads(re.search("{.*}", text).group())
-    #         break
     original_url = browser.current_url
     if not additional_data:
         browser.get('view-source:'+ browser.current_url +'?__a=1&__d=dis')
         text = browser.find_element(By.TAG_NAME, "pre").text
-        additional_data = json.loads(re.search("{.*}", text).group())
+        try:
+            additional_data = json.loads(re.search("{.*}", text).group())
+        except json.decoder.JSONDecodeError:
+            soup = BeautifulSoup(browser.page_source, "html.parser")
+            for text in soup(text=re.compile(r"window.__additionalDataLoaded")):
+                if re.search("^window.__additionalDataLoaded", text):
+                    additional_data = json.loads(re.search("{.*}", text).group())
+                    break
         browser.get(original_url)
 
     return additional_data
